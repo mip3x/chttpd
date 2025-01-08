@@ -15,4 +15,12 @@ typedef struct {
 
 server* init(uint16_t port, const char* web_root);
 
+typedef enum {
+    OK,
+    ERROR
+} status;
+
+status start(server* srv);
+void destroy(server* srv);
+
 #endif

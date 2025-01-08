@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-_Noreturn void err(const char* fmt, ...) {
+void err(const char* fmt, ...) {
     int     errno_save;
     va_list ap;
 
@@ -21,7 +21,17 @@ _Noreturn void err(const char* fmt, ...) {
     }
 
     va_end(ap);
-    exit(1);
+}
+
+void debug(const char* fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    vfprintf(stdout, fmt, ap);
+    fprintf(stdout, "\n");
+    fflush(stdout);
+
+    va_end(ap);
 }
 
 char* bin2hex(const unsigned char* input, size_t len) {
