@@ -3,9 +3,7 @@
 
 #include <stddef.h>
 
-#define SERVER_PORT 14880
-
-_Noreturn void  err(const char* fmt, ...);
+_Noreturn void err(const char* fmt, ...);
 char* bin2hex(const unsigned char* input, size_t len);
 
 #endif
