@@ -35,9 +35,9 @@ server* init(uint16_t port, const char* web_root) {
     }
 
     srv->web_root = web_root;
-    srv->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+    srv->listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if (srv->listen_fd < 0) {
+    if (srv->listen_fd == -1) {
         err("socket problem");
         free(srv);
         return NULL;
@@ -52,13 +52,13 @@ server* init(uint16_t port, const char* web_root) {
 }
 
 status start(server* srv) {
-    if ((bind(srv->listen_fd, (struct sockaddr*)&srv->addr, sizeof(srv->addr))) < 0) {
+    if ((bind(srv->listen_fd, (struct sockaddr*)&srv->addr, sizeof(srv->addr))) == -1) {
         err("bind problem");
         close(srv->listen_fd);
         return ERROR;
     }
 
-    if (listen(srv->listen_fd, 10) < 0) {
+    if (listen(srv->listen_fd, 10) == -1) {
         err("listen problem");
         close(srv->listen_fd);
         return ERROR;
@@ -66,9 +66,9 @@ status start(server* srv) {
 
     debug("Server is listening on port %d", ntohs(srv->addr.sin_port));
 
-    while (1) {
+    for (;;) {
         int client_fd = accept(srv->listen_fd, NULL, NULL);
-        if (client_fd < 0) {
+        if (client_fd == -1) {
             err("accept problem");
             return ERROR;
         }
