@@ -1,9 +1,14 @@
-#include "../include/server.h"
+#include <stddef.h>
+#include "../include/networking/server.h"
 
 int main() {
-    server* srv = init(SERVER_PORT, WEB_ROOT_PATH);
-    status finish_code = start(srv);
-    destroy(srv);
+    server srv;
+    status code = init_server(&srv, 0, NULL);
+    if (code == ERROR) return ERROR;
+    
+    code = launch_server(&srv);
+    if (code == ERROR) return ERROR;
 
-    return finish_code;
+    destroy_server(&srv);
+    return OK;
 }

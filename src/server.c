@@ -1,11 +1,8 @@
-#include <netinet/in.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
-#include "../include/server.h"
+#include "../include/networking/server.h"
 #include "../include/common.h"
 
 static void handle_client(int client_fd, const char *web_root) {
@@ -21,43 +18,43 @@ static void handle_client(int client_fd, const char *web_root) {
     write(client_fd, response, strlen(response));
 }
 
-void destroy(server *srv) {
+void destroy_server(server *srv) {
     close(srv->listen_fd);
     free(srv);
 }
 
-server* init(uint16_t port, const char* web_root) {
-    server* srv = malloc(sizeof(server));
-
+status init_server(server* srv, uint16_t port, const char* web_root) {
     if (!srv) {
-        err("server allocating problem");
-        return NULL;
+        err("server pointer is NULL");
+        return ERROR;
     }
 
-    srv->web_root = web_root;
+    srv->port = port != 0 ? port : DEFAULT_SERVER_PORT;
+    srv->web_root = web_root ? web_root : DEFAULT_WEB_ROOT_PATH;
+
+    bzero(&srv->addr, sizeof(srv->addr));
+    srv->addr.sin_family = AF_INET;
+    srv->addr.sin_port = htons(srv->port);
+    srv->addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
     srv->listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (srv->listen_fd == -1) {
         err("socket problem");
         free(srv);
-        return NULL;
+        return ERROR;
     }
 
-    bzero(&srv->addr, sizeof(srv->addr));
-    srv->addr.sin_family = AF_INET;
-    srv->addr.sin_port = htons(port);
-    srv->addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    return srv;
-}
-
-status start(server* srv) {
     if ((bind(srv->listen_fd, (struct sockaddr*)&srv->addr, sizeof(srv->addr))) == -1) {
-        err("bind problem");
+        err("binding problem");
         close(srv->listen_fd);
         return ERROR;
     }
 
+    return OK;
+}
+
+status launch_server(server* srv) {
     if (listen(srv->listen_fd, 10) == -1) {
         err("listen problem");
         close(srv->listen_fd);
