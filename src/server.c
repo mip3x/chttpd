@@ -3,12 +3,18 @@
 #include <unistd.h>
 
 #include "../include/networking/server.h"
+#include "../include/networking/transport/http_request.h"
 #include "../include/common.h"
 
 static void handle_client(int client_fd, const char *web_root) {
     char buffer[4096];
     read(client_fd, buffer, sizeof(buffer));
-    debug("Request:\n%s\n", buffer);
+    http_request request = parse_raw_request(buffer);
+    /*debug("Request:\n%s\n", buffer);*/
+    debug("Method: %d\nURI: %s\nVersion: %.1f\n", 
+      request.method, 
+      request.uri ? request.uri : "(null)", 
+      request.version);
 
     const char *response = "HTTP/1.1 200 OK\r\n"
                            "Content-Type: text/plain\r\n"
