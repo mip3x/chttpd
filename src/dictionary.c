@@ -1,0 +1,36 @@
+#include <stdlib.h>
+#include <string.h>
+
+#include "../include/dictionary.h"
+
+uint32_t hash(char* s) {
+    uint32_t hashval;
+    for (hashval = 0; *s != '\0'; s++)
+        hashval = *s + 31 * hashval;
+    return hashval % HASHSIZE;
+}
+
+struct nlist* lookup(char* s) {
+    struct nlist* np;
+    for (np = hashtab[hash(s)]; np != NULL; np = np->next)
+        if (strcmp(s, np->entry.mapping) == 0)
+            return np;
+    return NULL;
+}
+
+struct nlist* install(route entry) {
+    struct nlist* np;
+    uint32_t hashval;
+    if ((np = lookup(entry.mapping)) == NULL) {
+        np = (struct nlist*) malloc(sizeof(*np));
+        if (np == NULL || (np->entry.mapping = strdup(entry.mapping)) == NULL)
+            return NULL;
+        hashval = hash(entry.mapping);
+        np->next = hashtab[hashval];
+        hashtab[hashval] = np;
+    } else
+        free((void*)np->entry.file_path);
+    if ((np->entry.file_path = strdup(entry.file_path)) == NULL)
+        return NULL;
+    return np;
+}
