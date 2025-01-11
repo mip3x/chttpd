@@ -6,6 +6,7 @@
 #include "../include/networking/server.h"
 #include "../include/networking/transport/http_request.h"
 #include "../include/common.h"
+#include "../include/dictionary.h"
 
 static void handle_client(int client_fd, const char *web_root) {
     char buffer[4096];
@@ -16,6 +17,14 @@ static void handle_client(int client_fd, const char *web_root) {
       request.method, 
       request.uri ? request.uri : "(null)", 
       request.version);
+
+    char* file_path = NULL;
+    if (request.uri != NULL) {
+        struct nlist* lookup_result = lookup(request.uri);
+        if (lookup_result != NULL) file_path = lookup_result->entry.file_path;
+    }
+
+    if (file_path) debug("File path found: %s\n", file_path);
 
     const char *response = "HTTP/1.1 200 OK\r\n"
                            "Content-Type: text/plain\r\n"

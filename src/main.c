@@ -1,7 +1,15 @@
 #include <stddef.h>
+
 #include "../include/networking/server.h"
+#include "../include/route.h"
+#include "../include/dictionary.h"
 
 int main() {
+    route r1 = {.mapping = "/route1", .file_path = "file1"};
+    route r2 = {.mapping = "/route2", .file_path = "file2"};
+    install(r1);
+    install(r2);
+
     server srv;
     status code = init_server(&srv, 0, NULL);
     if (code == ERROR) return ERROR;
