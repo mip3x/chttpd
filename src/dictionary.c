@@ -34,3 +34,17 @@ struct nlist* install(route entry) {
         return NULL;
     return np;
 }
+
+void free_dictionary() {
+    for (int i = 0; i < HASHSIZE; i++) {
+        struct nlist* np = hashtab[i];
+        while (np != NULL) {
+            struct nlist* temp = np;
+            free(temp->entry.mapping);
+            free(temp->entry.file_path);
+            np = np->next;
+            free(temp);
+        }
+        hashtab[i] = NULL;
+    }
+}

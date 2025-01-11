@@ -13,3 +13,5 @@ uint32_t hash(char* s);
 
 struct nlist* lookup(char* s);
 struct nlist* install(route entry);
+
+void free_dictionary();
