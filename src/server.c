@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include "../include/networking/server.h"
@@ -48,6 +49,13 @@ status init_server(server* srv, uint16_t port, const char* web_root) {
     if (srv->listen_fd == -1) {
         err("socket problem");
         free(srv);
+        return ERROR;
+    }
+    
+    int yes = 1;
+    if (setsockopt(srv->listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        err("setsockopt problem");
+        close(srv->listen_fd);
         return ERROR;
     }
 
