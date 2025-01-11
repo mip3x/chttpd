@@ -6,6 +6,8 @@
 
 #include "../status.h"
 
+#define DEFAULT_404_FILE_PATH "default/404.html"
+
 typedef struct server {
     int listen_fd;
 #define DEFAULT_SERVER_PORT 14880

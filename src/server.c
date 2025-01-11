@@ -8,6 +8,28 @@
 #include "../include/common.h"
 #include "../include/dictionary.h"
 
+static char* handle_page_found(const char* file_path) {
+    debug("page found: %s\n", file_path);
+    char *response = "HTTP/1.1 200 OK\r\n"
+                           "Content-Type: text/plain\r\n"
+                           "Content-Length: 13\r\n"
+                           "\r\n"
+                           "Hello, client";
+    return response;
+}
+
+static char* handle_page_not_found(const char* file_path) {
+    debug("page not found\n");
+    file_path = DEFAULT_404_FILE_PATH; 
+    debug("file path: %s\n", file_path);
+    char *response = "HTTP/1.1 404 Not Found\r\n"
+                           "Content-Type: text/plain\r\n"
+                           "Content-Length: 18\r\n"
+                           "\r\n"
+                           "404 should be here";
+    return response;
+}
+
 static void handle_client(int client_fd, const char *web_root) {
     char buffer[4096];
     read(client_fd, buffer, sizeof(buffer));
@@ -24,13 +46,10 @@ static void handle_client(int client_fd, const char *web_root) {
         if (lookup_result != NULL) file_path = lookup_result->entry.file_path;
     }
 
-    if (file_path) debug("File path found: %s\n", file_path);
+    char* response = NULL;
+    if (file_path != NULL) response = handle_page_found(file_path); 
+    else response = handle_page_not_found(file_path);
 
-    const char *response = "HTTP/1.1 200 OK\r\n"
-                           "Content-Type: text/plain\r\n"
-                           "Content-Length: 13\r\n"
-                           "\r\n"
-                           "Hello, client";
     write(client_fd, response, strlen(response));
 }
 
