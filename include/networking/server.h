@@ -12,7 +12,7 @@ typedef struct server {
     int listen_fd;
 #define DEFAULT_SERVER_PORT 14880
     uint16_t port;
-#define DEFAULT_WEB_ROOT_PATH "../www/"
+#define DEFAULT_WEB_ROOT_PATH "./www/"
     const char* web_root;
     struct sockaddr_in addr;
 } server;
