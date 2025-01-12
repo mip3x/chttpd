@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -7,26 +8,61 @@
 #include "../include/networking/transport/http_request.h"
 #include "../include/common.h"
 #include "../include/dictionary.h"
+#include "../include/io.h"
 
-static char* handle_page_found(const char* file_path) {
-    debug("page found: %s\n", file_path);
-    char *response = "HTTP/1.1 200 OK\r\n"
-                           "Content-Type: text/plain\r\n"
-                           "Content-Length: 13\r\n"
-                           "\r\n"
-                           "Hello, client";
-    return response;
-}
+#define HTTP_404 "HTTP/1.1 404 Not Found\r\n"
+#define HTTP_200 "HTTP/1.1 200 OK\r\n"
 
-static char* handle_page_not_found(const char* file_path) {
-    debug("page not found\n");
-    file_path = DEFAULT_404_FILE_PATH; 
-    debug("file path: %s\n", file_path);
-    char *response = "HTTP/1.1 404 Not Found\r\n"
-                           "Content-Type: text/plain\r\n"
-                           "Content-Length: 18\r\n"
-                           "\r\n"
-                           "404 should be here";
+#define CONTENT_TYPE_TEXT "Content-Type: text/plain\r\n"
+#define CONTENT_TYPE_HTML "Content-Type: text/html\r\n"
+
+static char* handle_file_path(const char* file_path, const char* web_root) {
+    char* full_path = NULL;
+    char* body = NULL;
+    size_t content_length = 0;
+    char* response = NULL;
+
+    if (file_path == NULL) {
+        debug("page not found\n");
+
+        asprintf(&full_path, "%s%s", web_root, DEFAULT_404_FILE_PATH);
+        debug("file path: %s\n", full_path);
+        body = read_file(full_path, &content_length);
+
+        if (body == NULL) {
+            body = strdup("404 should be here");
+            content_length = strlen(body);
+        }
+
+        asprintf(&response, "%s%sContent-Length: %zu\r\n\r\n%s",
+                 HTTP_404,
+                 CONTENT_TYPE_HTML,
+                 content_length,
+                 body
+        );
+    }
+    else {
+        debug("page found\n");
+
+        asprintf(&full_path, "%s%s", web_root, file_path);
+        debug("file path: %s\n", full_path);
+        body = read_file(full_path, &content_length);
+
+        if (body == NULL) {
+            err("file read problem");
+            return NULL;
+        }
+
+        asprintf(&response, "%s%sContent-Length: %zu\r\n\r\n%s",
+                 HTTP_200,
+                 CONTENT_TYPE_HTML,
+                 content_length,
+                 body
+        );
+    }
+
+    free(body);
+
     return response;
 }
 
@@ -38,7 +74,8 @@ static void handle_client(int client_fd, const char *web_root) {
     debug("Method: %d\nURI: %s\nVersion: %.1f\n", 
       request.method, 
       request.uri ? request.uri : "(null)", 
-      request.version);
+      request.version
+    );
 
     char* file_path = NULL;
     if (request.uri != NULL) {
@@ -46,11 +83,11 @@ static void handle_client(int client_fd, const char *web_root) {
         if (lookup_result != NULL) file_path = lookup_result->entry.file_path;
     }
 
-    char* response = NULL;
-    if (file_path != NULL) response = handle_page_found(file_path); 
-    else response = handle_page_not_found(file_path);
-
+    char* response = handle_file_path(file_path, web_root);
     write(client_fd, response, strlen(response));
+
+    free(response);
+    free(file_path);
 }
 
 void destroy_server(server *srv) {
