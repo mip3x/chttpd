@@ -20,7 +20,7 @@
 
 static char* handle_file_path(const char* file_path, const char* web_root) {
     char* full_path = NULL;
-    char* file_content_type = NULL;
+    char* file_content_type = CONTENT_TYPE_HTML;
     char* body = NULL;
     size_t content_length = 0;
     char* response = NULL;
