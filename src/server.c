@@ -14,7 +14,7 @@
 #define HTTP_200 "HTTP/1.1 200 OK\r\n"
 
 #define CONTENT_TYPE_TEXT "Content-Type: text/plain\r\n"
-#define CONTENT_TYPE_HTML "Content-Type: text/html\r\n"
+#define CONTENT_TYPE_HTML "Content-Type: text/html; charset=UTF-8\r\n"
 
 static char* handle_file_path(const char* file_path, const char* web_root) {
     char* full_path = NULL;
