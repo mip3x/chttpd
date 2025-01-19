@@ -6,17 +6,10 @@
 
 #include "../include/networking/server.h"
 #include "../include/networking/transport/http_request.h"
+#include "../include/networking/transport/http_response.h"
 #include "../include/common.h"
 #include "../include/dictionary.h"
 #include "../include/io.h"
-
-#define HTTP_404 "HTTP/2 404 Not Found\r\n"
-#define HTTP_200 "HTTP/2 200 OK\r\n"
-
-#define CONTENT_TYPE_TEXT "Content-Type: text/plain\r\n"
-#define CONTENT_TYPE_HTML "Content-Type: text/html; charset=UTF-8\r\n"
-#define CONTENT_TYPE_CSS "Content-Type: text/css; charset=UTF-8\r\n"
-#define CONTENT_TYPE_JS "Content-Type: text/js; charset=UTF-8\r\n"
 
 static char* handle_file_path(const char* file_path, const char* web_root) {
     char* full_path = NULL;
@@ -29,7 +22,7 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
         debug(__func__, "page not found\n");
 
         asprintf(&full_path, "%s%s", web_root, DEFAULT_404_FILE_PATH);
-        debug("file path: %s\n", full_path);
+        debug(__func__, "file path: %s\n", full_path);
         body = read_file(full_path, &content_length);
 
         if (body == NULL) {
@@ -58,6 +51,7 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
 
         if (strstr(file_path, "html")) file_content_type = CONTENT_TYPE_HTML;
         if (strstr(file_path, "css")) file_content_type = CONTENT_TYPE_CSS;
+        if (strstr(file_path, "js")) file_content_type = CONTENT_TYPE_JS;
 
         asprintf(&response, "%s%sContent-Length: %zu\r\n\r\n%s",
                  HTTP_200,
