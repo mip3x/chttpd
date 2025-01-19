@@ -84,10 +84,10 @@ static void handle_client(int client_fd, const char *web_root) {
     }
 
     char* response = handle_file_path(file_path, web_root);
+    puts(response);
     write(client_fd, response, strlen(response));
 
     free(response);
-    free(file_path);
 }
 
 void destroy_server(server *srv) {
