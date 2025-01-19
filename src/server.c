@@ -10,8 +10,8 @@
 #include "../include/dictionary.h"
 #include "../include/io.h"
 
-#define HTTP_404 "HTTP/1.1 404 Not Found\r\n"
-#define HTTP_200 "HTTP/1.1 200 OK\r\n"
+#define HTTP_404 "HTTP/2 404 Not Found\r\n"
+#define HTTP_200 "HTTP/2 200 OK\r\n"
 
 #define CONTENT_TYPE_TEXT "Content-Type: text/plain\r\n"
 #define CONTENT_TYPE_HTML "Content-Type: text/html; charset=UTF-8\r\n"
@@ -20,7 +20,7 @@
 
 static char* handle_file_path(const char* file_path, const char* web_root) {
     char* full_path = NULL;
-    char* file_content_type = CONTENT_TYPE_HTML;
+    char* file_content_type = NULL;
     char* body = NULL;
     size_t content_length = 0;
     char* response = NULL;
