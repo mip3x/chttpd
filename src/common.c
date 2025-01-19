@@ -24,11 +24,11 @@ void err(const char* fmt, ...) {
     va_end(ap);
 }
 
-void debug(const char* fmt, ...) {
+void debug(const char* caller_func_name, const char* fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
-    fprintf(stdout, "[INFO] ");
+    fprintf(stdout, "[INFO (%s)] ", caller_func_name);
     vfprintf(stdout, fmt, ap);
     fprintf(stdout, "\n");
     fflush(stdout);

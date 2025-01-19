@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 void err(const char* fmt, ...);
-void debug(const char* fmt, ...);
+void debug(const char* caller_func_name, const char* fmt, ...);
 
 char* bin2hex(const unsigned char* input, size_t len);
 

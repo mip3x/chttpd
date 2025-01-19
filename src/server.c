@@ -23,7 +23,7 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
     char* response = NULL;
 
     if (file_path == NULL) {
-        debug("page not found\n");
+        debug(__func__, "page not found\n");
 
         asprintf(&full_path, "%s%s", web_root, DEFAULT_404_FILE_PATH);
         debug("file path: %s\n", full_path);
@@ -42,10 +42,10 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
         );
     }
     else {
-        debug("page found\n");
+        debug(__func__, "page found\n");
 
         asprintf(&full_path, "%s%s", web_root, file_path);
-        debug("file path: %s\n", full_path);
+        debug(__func__, "file path: %s\n", full_path);
         body = read_file(full_path, &content_length);
 
         if (body == NULL) {
@@ -71,7 +71,7 @@ static void handle_client(int client_fd, const char *web_root) {
     read(client_fd, buffer, sizeof(buffer));
     http_request request = parse_raw_request(buffer);
     /*debug("Request:\n%s\n", buffer);*/
-    debug("Method: %d\nURI: %s\nVersion: %.1f\n", 
+    debug(__func__, "Method: %d\nURI: %s\nVersion: %.1f\n", 
       request.method, 
       request.uri ? request.uri : "(null)", 
       request.version
@@ -140,7 +140,7 @@ status launch_server(server* srv) {
         return ERROR;
     }
 
-    debug("Server is listening on port %d", ntohs(srv->addr.sin_port));
+    debug(__func__, "Server is listening on port %d", ntohs(srv->addr.sin_port));
 
     for (;;) {
         int client_fd = accept(srv->listen_fd, NULL, NULL);
