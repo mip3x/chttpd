@@ -7,8 +7,12 @@
 int main() {
     route r1 = {.mapping = "/route1", .file_path = "file1"};
     route r2 = {.mapping = "/route2", .file_path = "file2"};
+    route r3 = {.mapping = "/main", .file_path = "index.html"};
+    route r4 = {.mapping = "/styles.css", .file_path = "styles.css"};
     install(r1);
     install(r2);
+    install(r3);
+    install(r4);
 
     server srv;
     status code = init_server(&srv, 0, NULL);

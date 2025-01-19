@@ -15,9 +15,12 @@
 
 #define CONTENT_TYPE_TEXT "Content-Type: text/plain\r\n"
 #define CONTENT_TYPE_HTML "Content-Type: text/html; charset=UTF-8\r\n"
+#define CONTENT_TYPE_CSS "Content-Type: text/css; charset=UTF-8\r\n"
+#define CONTENT_TYPE_JS "Content-Type: text/js; charset=UTF-8\r\n"
 
 static char* handle_file_path(const char* file_path, const char* web_root) {
     char* full_path = NULL;
+    char* file_content_type = NULL;
     char* body = NULL;
     size_t content_length = 0;
     char* response = NULL;
@@ -53,9 +56,12 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
             return NULL;
         }
 
+        if (strstr(file_path, "html")) file_content_type = CONTENT_TYPE_HTML;
+        if (strstr(file_path, "css")) file_content_type = CONTENT_TYPE_CSS;
+
         asprintf(&response, "%s%sContent-Length: %zu\r\n\r\n%s",
                  HTTP_200,
-                 CONTENT_TYPE_HTML,
+                 file_content_type,
                  content_length,
                  body
         );
