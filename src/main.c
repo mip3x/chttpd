@@ -9,10 +9,14 @@ int main() {
     route r2 = {.mapping = "/route2", .file_path = "file2"};
     route r3 = {.mapping = "/main", .file_path = "index.html"};
     route r4 = {.mapping = "/styles.mrcds", .file_path = "styles.mrcds"};
+    route r5 = {.mapping = "/404.css", .file_path = "default/404.css"};
+    route r6 = {.mapping = "/script.js", .file_path = "script.js"};
     install(r1);
     install(r2);
     install(r3);
     install(r4);
+    install(r5);
+    install(r6);
 
     server srv;
     status code = init_server(&srv, 0, NULL);
