@@ -3,6 +3,7 @@
 #include "../include/networking/server.h"
 #include "../include/route.h"
 #include "../include/dictionary.h"
+#include "../include/config_parser.h"
 
 int main() {
     route r1 = {.mapping = "/route1", .file_path = "file1"};
@@ -17,7 +18,9 @@ int main() {
     install(r5);
     install(r6);
 
-    server srv;
+    char* config_file_path = DEFAULT_CONFIG_PATH;
+    server srv = parse_config(config_file_path);
+
     status code = init_server(&srv, 0, NULL);
     if (code == ERROR) return ERROR;
     

@@ -72,9 +72,9 @@ static void handle_client(int client_fd, const char *web_root) {
     http_request request = parse_raw_request(buffer);
     /*debug("Request:\n%s\n", buffer);*/
     debug(__func__, "Method: %d\nURI: %s\nVersion: %.1f\n", 
-      request.method, 
-      request.uri ? request.uri : "(null)", 
-      request.version
+        request.method, 
+        request.uri ? request.uri : "(null)", 
+        request.version
     );
 
     char* file_path = NULL;

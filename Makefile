@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Iinclude -Wall -Wextra -g
 
-SRC_DIR = src
-BUILD_DIR = build
+SRC_DIR = solution/src
+BUILD_DIR = solution/build
 INCLUDE_DIR = include
 
 SRC = $(shell find $(SRC_DIR) -name '*.c')
