@@ -21,7 +21,7 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
     if (file_path == NULL) {
         debug(__func__, "page not found\n");
 
-        asprintf(&full_path, "%s%s", web_root, DEFAULT_404_FILE_PATH);
+        asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_FILE_PATH);
         debug(__func__, "file path: %s\n", full_path);
         body = read_file(full_path, &content_length);
 
@@ -66,7 +66,7 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
     return response;
 }
 
-static void handle_client(int client_fd, const char *web_root) {
+static void handle_client(int client_fd, char *web_root) {
     char buffer[4096];
     read(client_fd, buffer, sizeof(buffer));
     http_request request = parse_raw_request(buffer);
@@ -80,7 +80,10 @@ static void handle_client(int client_fd, const char *web_root) {
     char* file_path = NULL;
     if (request.uri != NULL) {
         struct nlist* lookup_result = lookup(request.uri);
-        if (lookup_result != NULL) file_path = lookup_result->entry.file_path;
+        if (lookup_result != NULL) {
+            file_path = lookup_result->entry.file_path;
+            if (strcmp(lookup_result->entry.web_root, "") != 0) web_root = lookup_result->entry.web_root;
+        }
     }
 
     char* response = handle_file_path(file_path, web_root);
@@ -97,7 +100,7 @@ void destroy_server(server *srv) {
     free(srv);
 }
 
-status init_server(server* srv, uint16_t port, const char* web_root) {
+status init_server(server* srv, uint16_t port, char* web_root) {
     if (!srv) {
         err("server pointer is NULL");
         return ERROR;

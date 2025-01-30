@@ -13,7 +13,7 @@ typedef struct server {
 #define DEFAULT_SERVER_PORT 14880
     uint16_t port;
 #define DEFAULT_WEB_ROOT_PATH "./www/"
-    const char* web_root;
+    char* web_root;
     struct sockaddr_in addr;
 } server;
 
@@ -28,7 +28,7 @@ typedef struct server {
 /*    srv.register_routes(example_handler, "/example", 2, 0, 1);*/
 /*}*/
 
-status init_server(server* srv, uint16_t port, const char* web_root);
+status init_server(server* srv, uint16_t port, char* web_root);
 status launch_server(server* srv);
 
 void destroy_server(server* srv);
