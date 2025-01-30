@@ -16,12 +16,8 @@ uint32_t hash(char* s) {
 struct nlist* lookup(char* s) {
     struct nlist* np;
     for (np = hashtab[hash(s)]; np != NULL; np = np->next)
-        if (strcmp(s, np->entry.mapping) == 0) {
-            debug(__func__, "a3 mapping: %s\n", np->entry.mapping);
-            debug(__func__, "a3 file_path: %s\n", np->entry.file_path);
-            debug(__func__, "web_root is null a3: %d\n", np->entry.web_root == NULL);
+        if (strcmp(s, np->entry.mapping) == 0)
             return np;
-        }
     return NULL;
 }
 
