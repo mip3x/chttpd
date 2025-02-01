@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "../include/dictionary.h"
-#include "../include/common.h"
 
 static struct nlist* hashtab[HASHSIZE];
 
