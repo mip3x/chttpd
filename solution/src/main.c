@@ -1,9 +1,9 @@
 #include <stddef.h>
 
 #include "../include/networking/server.h"
-#include "../include/route.h"
 #include "../include/dictionary.h"
 #include "../include/config_parser.h"
+#include "../include/extractor.h"
 
 int main() {
     /*route r1 = {.mapping = "/route1", .file_path = "file1"};*/
@@ -25,6 +25,8 @@ int main() {
 
     char* config_file_path = DEFAULT_CONFIG_PATH;
     server srv = parse_config(config_file_path);
+
+    extract_links("index.html", "./www/");
 
     /*server srv;*/
     status code = init_server(&srv, 0, NULL);
