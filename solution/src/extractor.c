@@ -5,8 +5,10 @@
 #include <string.h>
 
 #include "../include/common.h"
-#include "../include/io.h"
+#include "../include/dictionary.h"
 #include "../include/extractor.h"
+#include "../include/io.h"
+#include "../include/route.h"
 
 const char* patterns[] = {
     "<link[^>]+href=\"([^\"]+)\"",
@@ -21,12 +23,24 @@ static void free_extracted_links(char** const extracted_links, size_t count) {
     free(extracted_links);
 }
 
-void extract_links(const char* file_path, const char* web_root) {
+static void extract_links(route* route) {
+    char** extracted_links = malloc(REFERENCED_FILES * sizeof(char*));
+    if (!extracted_links) {
+        err("failed to allocate memory for extracted_links\n");
+        return;
+    }
+
+    PRINT_ROUTE(*route);
+
     char* file_path_with_web_root = NULL;
-    asprintf(&file_path_with_web_root, "%s%s", web_root, file_path);
+    asprintf(&file_path_with_web_root, "%s%s", route->web_root, route->file_path);
 
     size_t file_size;
     char* file_content = read_file(file_path_with_web_root, &file_size);
+    if (!file_content) {
+        err("failed to read file %s\n", file_path_with_web_root);
+        return;
+    }
 
     regex_t preg;
     size_t patterns_length = sizeof(patterns) / sizeof(patterns[0]);
@@ -34,7 +48,6 @@ void extract_links(const char* file_path, const char* web_root) {
     const size_t nmatch = 2;
     regmatch_t pmatch[nmatch + 1];
 
-    char** extracted_links = malloc(REFERENCED_FILES * sizeof(char*));
     size_t extracted_links_count = 0;
 
     for (size_t i = 0; i < patterns_length; i++) {
@@ -60,13 +73,17 @@ void extract_links(const char* file_path, const char* web_root) {
     regfree(&preg);
     free(file_content);
 
+    debug(__func__, "file_path_with_web_root: %s", file_path_with_web_root);
+
     // TODO: install routes
     
-    debug(__func__, "file_path_with_web_root: %s", file_path_with_web_root);
     free(file_path_with_web_root);
     free_extracted_links(extracted_links, extracted_links_count);
 }
 
-void process_routes() {
-    // TODO: iterate through routes and extract links in each
+/*
+  explore_routes() - explore routes for referenced files
+*/
+void explore_routes() {
+    perform_action_on_each_member(extract_links);
 }
