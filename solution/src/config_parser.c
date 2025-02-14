@@ -21,7 +21,7 @@ server parse_config(const char *file_path) {
     char* token = strtok(file_content, " \n\t");
 
     while (token) {
-        debug(__func__, "token: %s", token);
+        /*debug(__func__, "token: %s", token);*/
         if (strcmp(token, "{") == 0) {}
         else if (strcmp(token, "http") == 0) http_block = true;
         else if (strcmp(token, "route") == 0) {
@@ -38,7 +38,7 @@ server parse_config(const char *file_path) {
         else {
             char* key = token;
             char* value = strtok(NULL, " \n\t;");
-            debug(__func__, "key: %s\nvalue: %s", key, value);
+            /*debug(__func__, "key: %s\nvalue: %s", key, value);*/
 
             if (value) {
                 if (http_block && !route_block) {
