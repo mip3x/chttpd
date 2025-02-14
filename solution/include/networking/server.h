@@ -17,17 +17,6 @@ typedef struct server {
     struct sockaddr_in addr;
 } server;
 
-/*void (*register_routes)(char *(route_handler)(struct http_request* request), char* uri, int num_methods, ...);*/
-
-/*char* example_handler(struct http_request* request) {*/
-/*    return (char*)"meow";*/
-/*}*/
-/**/
-/*int main() {*/
-/*    server srv;*/
-/*    srv.register_routes(example_handler, "/example", 2, 0, 1);*/
-/*}*/
-
 status init_server(server* srv, uint16_t port, char* web_root);
 status launch_server(server* srv);
 
