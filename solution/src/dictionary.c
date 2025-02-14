@@ -38,16 +38,16 @@ struct nlist* install(route entry) {
     if (entry.web_root != NULL)
         np->entry.web_root = strdup(entry.web_root);
     else 
-        np->entry.web_root = CONFIG_WEB_ROOT;
+        np->entry.web_root = DEFAULT_WEB_ROOT_PATH;
 
     return np;
 }
 
-void perform_action_on_each_member(void (*func)(route)) {
+void perform_action_on_each_member(void (*func)(route*)) {
     for (int i = 0; i < HASHSIZE; i++) {
         struct nlist* np = hashtab[i];
         while (np != NULL) {
-            func(np->entry);
+            func(&np->entry);
             np = np->next;
         }
     }
