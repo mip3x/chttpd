@@ -11,14 +11,14 @@
 #include "../include/dictionary.h"
 #include "../include/io.h"
 
-static char* handle_file_path(const char* file_path, const char* web_root) {
+static char* handle_route(const route route) {
     char* full_path = NULL;
     char* file_content_type = NULL;
     char* body = NULL;
     size_t content_length = 0;
     char* response = NULL;
 
-    if (file_path == NULL) {
+    if (route.file_path == NULL) {
         debug(__func__, "page not found");
 
         asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_FILE_PATH);
@@ -40,7 +40,7 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
     else {
         debug(__func__, "page found");
 
-        asprintf(&full_path, "%s%s", web_root, file_path);
+        asprintf(&full_path, "%s%s", route.web_root, route.file_path);
         debug(__func__, "file path: %s", full_path);
         body = read_file(full_path, &content_length);
 
@@ -49,9 +49,9 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
             return NULL;
         }
 
-        if (strstr(file_path, "html")) file_content_type = CONTENT_TYPE_HTML;
-        if (strstr(file_path, "css")) file_content_type = CONTENT_TYPE_CSS;
-        if (strstr(file_path, "js")) file_content_type = CONTENT_TYPE_JS;
+        if (strstr(route.file_path, "html")) file_content_type = CONTENT_TYPE_HTML;
+        if (strstr(route.file_path, "css")) file_content_type = CONTENT_TYPE_CSS;
+        if (strstr(route.file_path, "js")) file_content_type = CONTENT_TYPE_JS;
 
         asprintf(&response, "%s%sContent-Length: %zu\r\n\r\n%s",
                  HTTP_200,
@@ -66,27 +66,24 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
     return response;
 }
 
-static void handle_client(int client_fd, char *web_root) {
+static void handle_client(int client_fd, char* web_root) {
     char buffer[4096];
     read(client_fd, buffer, sizeof(buffer));
     http_request request = parse_raw_request(buffer);
-    /*debug("Request:\n%s\n", buffer);*/
+
     debug(__func__, "Method: %d\nURI: %s\nVersion: %.1f", 
         request.method, 
         request.uri ? request.uri : "(null)", 
         request.version
     );
 
-    char* file_path = NULL;
+    route found_route = { NULL };
     if (request.uri != NULL) {
         struct nlist* lookup_result = lookup(request.uri);
-        if (lookup_result != NULL) {
-            file_path = lookup_result->entry.file_path;
-            if (strcmp(lookup_result->entry.web_root, "") != 0) web_root = lookup_result->entry.web_root;
-        }
+        if (lookup_result != NULL) found_route = lookup_result->entry;
     }
 
-    char* response = handle_file_path(file_path, web_root);
+    char* response = handle_route(found_route);
     if (response == NULL) return;
 
     puts(response);
@@ -95,7 +92,7 @@ static void handle_client(int client_fd, char *web_root) {
     free(response);
 }
 
-void destroy_server(server *srv) {
+void destroy_server(server* srv) {
     close(srv->listen_fd);
     free(srv);
 }
