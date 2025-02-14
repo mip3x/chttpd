@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "../include/dictionary.h"
+#include "../include/common.h"
 
 static struct nlist* hashtab[HASHSIZE];
 
@@ -41,6 +42,25 @@ struct nlist* install(route entry) {
         np->entry.web_root = strdup("");
 
     return np;
+}
+
+void print_route(route route) {
+    debug(__func__, 
+          "route:\n\tweb_root: %s\n\tmapping: %s\n\tfile_path: %s",
+            route.web_root,
+            route.mapping,
+            route.file_path
+    );
+}
+
+void perform_action_on_each_member(void (*func)(route)) {
+    for (int i = 0; i < HASHSIZE; i++) {
+        struct nlist* np = hashtab[i];
+        while (np != NULL) {
+            func(np->entry);
+            np = np->next;
+        }
+    }
 }
 
 void free_dictionary() {
