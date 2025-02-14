@@ -39,18 +39,9 @@ struct nlist* install(route entry) {
     if (entry.web_root != NULL)
         np->entry.web_root = strdup(entry.web_root);
     else 
-        np->entry.web_root = strdup("");
+        np->entry.web_root = CONFIG_WEB_ROOT;
 
     return np;
-}
-
-void print_route(route route) {
-    debug(__func__, 
-          "route:\n\tweb_root: %s\n\tmapping: %s\n\tfile_path: %s",
-            route.web_root,
-            route.mapping,
-            route.file_path
-    );
 }
 
 void perform_action_on_each_member(void (*func)(route)) {
