@@ -19,10 +19,10 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
     char* response = NULL;
 
     if (file_path == NULL) {
-        debug(__func__, "page not found\n");
+        debug(__func__, "page not found");
 
         asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_FILE_PATH);
-        debug(__func__, "file path: %s\n", full_path);
+        debug(__func__, "file path: %s", full_path);
         body = read_file(full_path, &content_length);
 
         if (body == NULL) {
@@ -38,10 +38,10 @@ static char* handle_file_path(const char* file_path, const char* web_root) {
         );
     }
     else {
-        debug(__func__, "page found\n");
+        debug(__func__, "page found");
 
         asprintf(&full_path, "%s%s", web_root, file_path);
-        debug(__func__, "file path: %s\n", full_path);
+        debug(__func__, "file path: %s", full_path);
         body = read_file(full_path, &content_length);
 
         if (body == NULL) {
@@ -71,7 +71,7 @@ static void handle_client(int client_fd, char *web_root) {
     read(client_fd, buffer, sizeof(buffer));
     http_request request = parse_raw_request(buffer);
     /*debug("Request:\n%s\n", buffer);*/
-    debug(__func__, "Method: %d\nURI: %s\nVersion: %.1f\n", 
+    debug(__func__, "Method: %d\nURI: %s\nVersion: %.1f", 
         request.method, 
         request.uri ? request.uri : "(null)", 
         request.version

@@ -34,21 +34,20 @@ void extract_links(const char* file_path, const char* web_root) {
         int regexec_result = regexec(&preg, file_content, nmatch, pmatch, 0);
 
         if (regexec_result == 0) {
-            debug(__func__, "match found in %s\n", file_path_with_web_root);
+            debug(__func__, "match to pattern %s found in %s", patterns[i], file_path_with_web_root);
 
             regmatch_t extracted_link = pmatch[1];
-            if (extracted_link.rm_so != -1) {
-                char buf[256] = {0};
-                strncpy(buf, file_content + extracted_link.rm_so, extracted_link.rm_eo - extracted_link.rm_so);
-                debug(__func__, "start %d, end %d: %s\n", extracted_link.rm_so, extracted_link.rm_eo, buf);
-            }
+            char buf[256] = {0};
+            strncpy(buf, file_content + extracted_link.rm_so, extracted_link.rm_eo - extracted_link.rm_so);
+            debug(__func__, "start %d, end %d: %s", extracted_link.rm_so, extracted_link.rm_eo, buf);
         }
         else if (regexec_result == REG_NOMATCH)
-            debug(__func__, "no match found in %s\n", file_path_with_web_root);
+            debug(__func__, "no match to pattern %s found in %s", patterns[i], file_path_with_web_root);
     }
 
     regfree(&preg);
     free(file_content);
+    free(file_path_with_web_root);
 
     // TODO: install routes
 }

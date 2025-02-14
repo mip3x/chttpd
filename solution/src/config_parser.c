@@ -21,7 +21,7 @@ server parse_config(const char *file_path) {
     char* token = strtok(file_content, " \n\t");
 
     while (token) {
-        debug(__func__, "token: %s\n", token);
+        debug(__func__, "token: %s", token);
         if (strcmp(token, "{") == 0) {}
         else if (strcmp(token, "http") == 0) http_block = true;
         else if (strcmp(token, "route") == 0) {
@@ -38,19 +38,19 @@ server parse_config(const char *file_path) {
         else {
             char* key = token;
             char* value = strtok(NULL, " \n\t;");
-            debug(__func__, "key: %s\nvalue: %s\n", key, value);
+            debug(__func__, "key: %s\nvalue: %s", key, value);
 
             if (value) {
                 if (http_block && !route_block) {
                     if (strcmp(key, "port:") == 0) srv.port = atoi(value);
                     else if (strcmp(key, "web_root:") == 0) srv.web_root = strdup(value);
-                    debug(__func__, "http was updated:\nport: %d\nweb_root: %s\n", srv.port, srv.web_root);
+                    debug(__func__, "http was updated:\nport: %d\nweb_root: %s", srv.port, srv.web_root);
                 } 
                 else if (route_block) {
                     if (strcmp(key, "mapping:") == 0) current_route.mapping = strdup(value);
                     else if (strcmp(key, "file_path:") == 0) current_route.file_path = strdup(value);
                     else if (strcmp(key, "web_root:") == 0) current_route.web_root = strdup(value);
-                    debug(__func__, "route was updated:\nmapping: %s\nfile_path: %s\nweb_root: %s\n", current_route.mapping, current_route.file_path, current_route.web_root);
+                    debug(__func__, "route was updated:\nmapping: %s\nfile_path: %s\nweb_root: %s", current_route.mapping, current_route.file_path, current_route.web_root);
                 }
             }
         }
