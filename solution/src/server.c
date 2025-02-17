@@ -66,7 +66,7 @@ static char* handle_route(const route route) {
     return response;
 }
 
-static void handle_client(int client_fd, char* web_root) {
+static void handle_client(int client_fd) {
     char buffer[4096];
     read(client_fd, buffer, sizeof(buffer));
     http_request request = parse_raw_request(buffer);
@@ -151,7 +151,7 @@ status launch_server(server* srv) {
             return ERROR;
         }
 
-        handle_client(client_fd, srv->web_root);
+        handle_client(client_fd);
         close(client_fd);
     }
 
