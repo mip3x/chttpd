@@ -1,8 +1,14 @@
-#include <stdio.h>
-#include <stdarg.h>
 #include <errno.h>
-#include <string.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+bool starts_with(const char* prefix, const char* str) {
+    size_t lenprefix = strlen(prefix), lenstr = strlen(str);
+    return lenstr < lenprefix ? false : memcmp(prefix, str, lenprefix) == 0;
+}
 
 void err(const char* fmt, ...) {
     int     errno_save;
