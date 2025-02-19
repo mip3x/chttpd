@@ -37,27 +37,41 @@ static char* get_absolute_path(char* relative_path, char* incoming_web_root) {
     debug(__func__, "relative_path_with_prefix: %s", relative_path_with_prefix);
 
     size_t step_back_occurrences_number = get_occurrences_number(relative_path_with_prefix, STEP_BACK_TRANSITION);
+
     debug(__func__, "number of occurrences: %zu\nweb_root: %s", step_back_occurrences_number, incoming_web_root);
-    if (step_back_occurrences_number == 0) return relative_path_with_prefix;
+    if (step_back_occurrences_number == 0) {
+        char* absolute_path;
+        asprintf(&absolute_path, "%s%s", incoming_web_root, relative_path);
+        free(relative_path_with_prefix);
+        return absolute_path;
+    };
 
     char* tmp_web_root = strdup(incoming_web_root);
+    tmp_web_root[strlen(tmp_web_root) - 1] = '\0';
     debug(__func__, "tmp_web_root start: %s", tmp_web_root);
-    step_back_occurrences_number++;
 
-    for (; step_back_occurrences_number > 0; step_back_occurrences_number--) {
-        char* last_slash = strrchr(tmp_web_root, SLASH_DELIMITER);
-
-        if (last_slash && last_slash != tmp_web_root) *last_slash = '\0';
+    for (size_t i = 0; i < step_back_occurrences_number; i++) {
+        char* last_slash = strrchr(tmp_web_root, SLASH_DELIMITER_BYTE);
+        if (last_slash) *last_slash = '\0';
         else break;
 
         debug(__func__, "tmp_web_root: %s", tmp_web_root);
     }
     debug(__func__, "tmp_web_root final: %s", tmp_web_root);
-    /*free(tmp_web_root);*/
 
-    if (strcmp(incoming_web_root, CONFIG_WEB_ROOT_PATH) == 0) return relative_path_with_prefix;
+    if (strlen(tmp_web_root) < strlen(incoming_web_root)) tmp_web_root = strdup(CONFIG_WEB_ROOT_PATH);
+    else {
+        snprintf(buf, sizeof buf, "%s/", tmp_web_root);
+        strcpy(tmp_web_root, buf);
+    }
 
-    return relative_path_with_prefix;
+    char* absolute_path;
+    asprintf(&absolute_path, "%s%s", tmp_web_root, relative_path + (strlen(STEP_BACK_TRANSITION) - 1) * step_back_occurrences_number);
+
+    free(tmp_web_root);
+    free(relative_path_with_prefix);
+
+    return absolute_path;
 }
 
 static void extract_links(route* incoming_route) {
@@ -92,9 +106,9 @@ static void extract_links(route* incoming_route) {
             char* extracted_link = strndup(search_start + extracted_link_regmatch_t.rm_so, extracted_link_length);
 
             debug(__func__, "extracted link: %s", extracted_link);
-            char* relative_path = get_absolute_path(extracted_link, incoming_route->web_root);
+            char* absolute_path = get_absolute_path(extracted_link, incoming_route->web_root);
 
-            debug(__func__, "relative path: %s", relative_path);
+            debug(__func__, "absolute path: %s", absolute_path);
 
             /*char buf[BUFFER_SIZE];*/
             /*snprintf(buf, sizeof buf, "%s", relative_path);*/
@@ -102,7 +116,7 @@ static void extract_links(route* incoming_route) {
             route extracted_link_route = {
                 .web_root = strdup(incoming_route->web_root),
                 .file_path = strdup(extracted_link),
-                .mapping = strdup(relative_path),
+                .mapping = strdup(absolute_path),
             }; 
 
             install(extracted_link_route);
