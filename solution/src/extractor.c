@@ -24,7 +24,6 @@ const char* patterns[] = {
 // ./../../styles.css <-> ./www/web/root/number/one/
 // ./../styles.css <-> ./www/web/root/number/
 // ./styles.css <-> ./www/web/root/
-
 static char* get_absolute_path(char* relative_path, char* incoming_web_root) {
     bool has_nostep_prefix = starts_with(NOSTEP_TRANSITION, relative_path);
 
@@ -38,11 +37,25 @@ static char* get_absolute_path(char* relative_path, char* incoming_web_root) {
     debug(__func__, "relative_path_with_prefix: %s", relative_path_with_prefix);
 
     size_t step_back_occurrences_number = get_occurrences_number(relative_path_with_prefix, STEP_BACK_TRANSITION);
-
-    debug(__func__, "number of occurrences: %zu", step_back_occurrences_number);
+    debug(__func__, "number of occurrences: %zu\nweb_root: %s", step_back_occurrences_number, incoming_web_root);
     if (step_back_occurrences_number == 0) return relative_path_with_prefix;
 
-    if (strcmp(incoming_web_root, CONFIG_WEB_ROOT_PATH) == 0) return relative_path;
+    char* tmp_web_root = strdup(incoming_web_root);
+    debug(__func__, "tmp_web_root start: %s", tmp_web_root);
+    step_back_occurrences_number++;
+
+    for (; step_back_occurrences_number > 0; step_back_occurrences_number--) {
+        char* last_slash = strrchr(tmp_web_root, SLASH_DELIMITER);
+
+        if (last_slash && last_slash != tmp_web_root) *last_slash = '\0';
+        else break;
+
+        debug(__func__, "tmp_web_root: %s", tmp_web_root);
+    }
+    debug(__func__, "tmp_web_root final: %s", tmp_web_root);
+    /*free(tmp_web_root);*/
+
+    if (strcmp(incoming_web_root, CONFIG_WEB_ROOT_PATH) == 0) return relative_path_with_prefix;
 
     return relative_path_with_prefix;
 }
