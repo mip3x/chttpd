@@ -17,61 +17,31 @@ const char* patterns[] = {
     "<script[^>]+src=\"([^\"]+)\""
 };
 
-// wdid: count STEP_BACK_TRANSITION occurrences and cuts incoming_web_root's last transition
-// let web_root be next: './www/web/root/number/one/'
-// there will be '/' always at the end
-// then, absolute path for './../../styles.css' will be found next way:
-// ./../../styles.css <-> ./www/web/root/number/one/
-// ./../styles.css <-> ./www/web/root/number/
-// ./styles.css <-> ./www/web/root/
-static char* get_absolute_path(char* relative_path, char* incoming_web_root) {
-    bool has_nostep_prefix = starts_with(NOSTEP_TRANSITION, relative_path);
+// wdid: count STEP_BACK_TRANSITION occurrences and cuts incoming_mapping's last transition
+// let mapping be next: '/m1/m2/m3/m4'
+// then, mapping for '../../styles.css' will be found next way:
+// ../../styles.css <-> /m1/m2/m3/
+// ../styles.css <-> /m1/m2/
+// styles.css <-> /m1/
+//
+static char* get_mapping(char* relative_path, char* parent_mapping) {
+    size_t step_back_occurrences_number = get_occurrences_number(relative_path, STEP_BACK_TRANSITION);
 
-    char buf[BUFFER_SIZE];
-    char* relative_path_with_prefix;
+    debug(__func__, "number of occurrences: %zu\nparent_mapping: %s", step_back_occurrences_number, parent_mapping);
+    char* tmp_parent_mapping = strdup(parent_mapping);
 
-    if (!has_nostep_prefix) snprintf(buf, sizeof buf, "%s%s", NOSTEP_TRANSITION, relative_path); 
-    else strcpy(buf, relative_path);
-
-    relative_path_with_prefix = strdup(buf);
-    debug(__func__, "relative_path_with_prefix: %s", relative_path_with_prefix);
-
-    size_t step_back_occurrences_number = get_occurrences_number(relative_path_with_prefix, STEP_BACK_TRANSITION);
-
-    debug(__func__, "number of occurrences: %zu\nweb_root: %s", step_back_occurrences_number, incoming_web_root);
-    if (step_back_occurrences_number == 0) {
-        char* absolute_path;
-        asprintf(&absolute_path, "%s%s", incoming_web_root, relative_path);
-        free(relative_path_with_prefix);
-        return absolute_path;
-    };
-
-    char* tmp_web_root = strdup(incoming_web_root);
-    tmp_web_root[strlen(tmp_web_root) - 1] = '\0';
-    debug(__func__, "tmp_web_root start: %s", tmp_web_root);
-
-    for (size_t i = 0; i < step_back_occurrences_number; i++) {
-        char* last_slash = strrchr(tmp_web_root, SLASH_DELIMITER_BYTE);
+    for (size_t i = 0; i < step_back_occurrences_number + 1; i++) {
+        char* last_slash = strrchr(tmp_parent_mapping, SLASH_DELIMITER);
         if (last_slash) *last_slash = '\0';
         else break;
-
-        debug(__func__, "tmp_web_root: %s", tmp_web_root);
-    }
-    debug(__func__, "tmp_web_root final: %s", tmp_web_root);
-
-    if (strlen(tmp_web_root) < strlen(incoming_web_root)) tmp_web_root = strdup(CONFIG_WEB_ROOT_PATH);
-    else {
-        snprintf(buf, sizeof buf, "%s/", tmp_web_root);
-        strcpy(tmp_web_root, buf);
     }
 
-    char* absolute_path;
-    asprintf(&absolute_path, "%s%s", tmp_web_root, relative_path + (strlen(STEP_BACK_TRANSITION) - 1) * step_back_occurrences_number);
+    char* child_mapping;
+    asprintf(&child_mapping, "%s/%s", tmp_parent_mapping, relative_path + strlen(STEP_BACK_TRANSITION) * step_back_occurrences_number);
+    free(tmp_parent_mapping);
 
-    free(tmp_web_root);
-    free(relative_path_with_prefix);
-
-    return absolute_path;
+    debug(__func__, "child_mapping: %s", child_mapping);
+    return child_mapping;
 }
 
 static void extract_links(route* incoming_route) {
@@ -106,17 +76,14 @@ static void extract_links(route* incoming_route) {
             char* extracted_link = strndup(search_start + extracted_link_regmatch_t.rm_so, extracted_link_length);
 
             debug(__func__, "extracted link: %s", extracted_link);
-            char* absolute_path = get_absolute_path(extracted_link, incoming_route->web_root);
+            char* mapping = get_mapping(extracted_link, incoming_route->mapping);
 
-            debug(__func__, "absolute path: %s", absolute_path);
-
-            /*char buf[BUFFER_SIZE];*/
-            /*snprintf(buf, sizeof buf, "%s", relative_path);*/
+            debug(__func__, "mapping: %s", mapping);
 
             route extracted_link_route = {
                 .web_root = strdup(incoming_route->web_root),
                 .file_path = strdup(extracted_link),
-                .mapping = strdup(absolute_path),
+                .mapping = strdup(mapping),
             }; 
 
             install(extracted_link_route);
@@ -124,6 +91,7 @@ static void extract_links(route* incoming_route) {
 
             search_start += extracted_link_regmatch_t.rm_eo;
             free(extracted_link);
+            free(mapping);
         }
     }
 
