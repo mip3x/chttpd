@@ -17,34 +17,31 @@ const char* patterns[] = {
     "<script[^>]+src=\"([^\"]+)\""
 };
 
-// wdid: count STEP_BACK_TRANSITION occurrences and cuts incoming_web_root's last transition
-// let web_root be next: './www/web/root/number/one/'
-// there will be '/' always at the end
-// then, absolute path for './../../styles.css' will be found next way:
-// ./../../styles.css <-> ./www/web/root/number/one/
-// ./../styles.css <-> ./www/web/root/number/
-// ./styles.css <-> ./www/web/root/
+// wdid: count STEP_BACK_TRANSITION occurrences and cuts incoming_mapping's last transition
+// let mapping be next: '/m1/m2/m3/m4'
+// then, mapping for '../../styles.css' will be found next way:
+// ../../styles.css <-> /m1/m2/m3/
+// ../styles.css <-> /m1/m2/
+// styles.css <-> /m1/
+//
+static char* get_mapping(char* relative_path, char* parent_mapping) {
+    size_t step_back_occurrences_number = get_occurrences_number(relative_path, STEP_BACK_TRANSITION);
 
-static char* get_absolute_path(char* relative_path, char* incoming_web_root) {
-    bool has_nostep_prefix = starts_with(NOSTEP_TRANSITION, relative_path);
+    debug(__func__, "number of occurrences: %zu\nparent_mapping: %s", step_back_occurrences_number, parent_mapping);
+    char* tmp_parent_mapping = strdup(parent_mapping);
 
-    char buf[BUFFER_SIZE];
-    char* relative_path_with_prefix;
+    for (size_t i = 0; i < step_back_occurrences_number + 1; i++) {
+        char* last_slash = strrchr(tmp_parent_mapping, SLASH_DELIMITER);
+        if (last_slash) *last_slash = '\0';
+        else break;
+    }
 
-    if (!has_nostep_prefix) snprintf(buf, sizeof buf, "%s%s", NOSTEP_TRANSITION, relative_path); 
-    else strcpy(buf, relative_path);
+    char* child_mapping;
+    asprintf(&child_mapping, "%s/%s", tmp_parent_mapping, relative_path + strlen(STEP_BACK_TRANSITION) * step_back_occurrences_number);
+    free(tmp_parent_mapping);
 
-    relative_path_with_prefix = strdup(buf);
-    debug(__func__, "relative_path_with_prefix: %s", relative_path_with_prefix);
-
-    size_t step_back_occurrences_number = get_occurrences_number(relative_path_with_prefix, STEP_BACK_TRANSITION);
-
-    debug(__func__, "number of occurrences: %zu", step_back_occurrences_number);
-    if (step_back_occurrences_number == 0) return relative_path_with_prefix;
-
-    if (strcmp(incoming_web_root, CONFIG_WEB_ROOT_PATH) == 0) return relative_path;
-
-    return relative_path_with_prefix;
+    debug(__func__, "child_mapping: %s", child_mapping);
+    return child_mapping;
 }
 
 static void extract_links(route* incoming_route) {
@@ -79,17 +76,14 @@ static void extract_links(route* incoming_route) {
             char* extracted_link = strndup(search_start + extracted_link_regmatch_t.rm_so, extracted_link_length);
 
             debug(__func__, "extracted link: %s", extracted_link);
-            char* relative_path = get_absolute_path(extracted_link, incoming_route->web_root);
+            char* mapping = get_mapping(extracted_link, incoming_route->mapping);
 
-            debug(__func__, "relative path: %s", relative_path);
-
-            /*char buf[BUFFER_SIZE];*/
-            /*snprintf(buf, sizeof buf, "%s", relative_path);*/
+            debug(__func__, "mapping: %s", mapping);
 
             route extracted_link_route = {
                 .web_root = strdup(incoming_route->web_root),
                 .file_path = strdup(extracted_link),
-                .mapping = strdup(relative_path),
+                .mapping = strdup(mapping),
             }; 
 
             install(extracted_link_route);
@@ -97,6 +91,7 @@ static void extract_links(route* incoming_route) {
 
             search_start += extracted_link_regmatch_t.rm_eo;
             free(extracted_link);
+            free(mapping);
         }
     }
 

@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "../include/route.h"
 #include "../include/networking/server.h"
 #include "../include/networking/transport/http_request.h"
 #include "../include/networking/transport/http_response.h"
@@ -11,14 +12,14 @@
 #include "../include/dictionary.h"
 #include "../include/io.h"
 
-static char* handle_route(const route route) {
+static char* handle_route(const route incoming_route) {
     char* full_path = NULL;
     char* file_content_type = NULL;
     char* body = NULL;
     size_t content_length = 0;
     char* response = NULL;
 
-    if (route.file_path == NULL) {
+    if (incoming_route.file_path == NULL) {
         debug(__func__, "page not found");
 
         asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_FILE_PATH);
@@ -40,18 +41,18 @@ static char* handle_route(const route route) {
     else {
         debug(__func__, "page found");
 
-        asprintf(&full_path, "%s%s", route.web_root, route.file_path);
+        asprintf(&full_path, "%s%s", incoming_route.web_root, incoming_route.file_path);
         debug(__func__, "file path: %s", full_path);
         body = read_file(full_path, &content_length);
 
         if (body == NULL) {
             err("file read problem");
-            return NULL;
+            return handle_route((route){.file_path = NULL});
         }
 
-        if (strstr(route.file_path, "html")) file_content_type = CONTENT_TYPE_HTML;
-        if (strstr(route.file_path, "css")) file_content_type = CONTENT_TYPE_CSS;
-        if (strstr(route.file_path, "js")) file_content_type = CONTENT_TYPE_JS;
+        if (strstr(incoming_route.file_path, "html")) file_content_type = CONTENT_TYPE_HTML;
+        if (strstr(incoming_route.file_path, "css")) file_content_type = CONTENT_TYPE_CSS;
+        if (strstr(incoming_route.file_path, "js")) file_content_type = CONTENT_TYPE_JS;
 
         asprintf(&response, "%s%sContent-Length: %zu\r\n\r\n%s",
                  HTTP_200,

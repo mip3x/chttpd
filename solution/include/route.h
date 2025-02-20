@@ -10,7 +10,6 @@ typedef struct {
     char* web_root;
     char* mapping;
     char* file_path;
-    void (*handler)(int client_fd);
 } route;
 
 #define PRINT_ROUTE(route) \
