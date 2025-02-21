@@ -11,6 +11,7 @@
 #include "../include/common.h"
 #include "../include/dictionary.h"
 #include "../include/io.h"
+#include "../include/404.h"
 
 static char* handle_route(const route incoming_route) {
     char* full_path = NULL;
@@ -22,7 +23,7 @@ static char* handle_route(const route incoming_route) {
     if (incoming_route.file_path == NULL) {
         debug(__func__, "page not found");
 
-        asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_FILE_PATH);
+        asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_HTML_FILE_PATH);
         debug(__func__, "file path: %s", full_path);
         body = read_file(full_path, &content_length);
 

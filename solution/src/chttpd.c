@@ -15,6 +15,7 @@ int main() {
     debug(__func__, "srv web_root: %s\n", srv.web_root);
 
     explore_routes();
+    /*install_404_route();*/
     PRINT_ALL_ROUTES();
 
     status code = init_server(&srv, 0, NULL);
