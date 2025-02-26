@@ -4,6 +4,7 @@
 #include "../include/dictionary.h"
 #include "../include/config_parser.h"
 #include "../include/extractor.h"
+#include "../include/404.h"
 
 int main() {
     char* config_file_path = DEFAULT_CONFIG_PATH;
@@ -15,7 +16,7 @@ int main() {
     debug(__func__, "srv web_root: %s\n", srv.web_root);
 
     explore_routes();
-    /*install_404_route();*/
+    install_404_route();
     PRINT_ALL_ROUTES();
 
     status code = init_server(&srv, 0, NULL);
