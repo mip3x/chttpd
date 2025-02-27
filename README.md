@@ -2,7 +2,7 @@
 This is a simple HTTP server implementation in C that supports static file serving and configurable routes. The server uses a hash map to store routes and supports both string-based and regex-based mappings
 
 ## Features
-- Serves static files (HTML, CSS, JS, etc.)
+- Serves static files
 - Configurable routing through a configuration file
 - Supports both exact and regex-based URL mappings
 
