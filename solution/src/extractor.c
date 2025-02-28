@@ -51,8 +51,9 @@ static void extract_links(route* incoming_route) {
     asprintf(&file_path_with_web_root, "%s%s", incoming_route->web_root, incoming_route->file_path);
 
     size_t file_size;
-    char* file_content = read_file(file_path_with_web_root, &file_size);
-    if (!file_content) {
+    char* file_content = malloc(sizeof(char*));
+    status read = read_file(&file_content, file_path_with_web_root, &file_size);
+    if (read != OK) {
         err("failed to read file %s\n", file_path_with_web_root);
         return;
     }

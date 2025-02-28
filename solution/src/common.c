@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/status.h"
+
 void err(const char* fmt, ...) {
     int     errno_save;
     va_list ap;
@@ -22,6 +24,48 @@ void err(const char* fmt, ...) {
     }
 
     va_end(ap);
+}
+
+void print_err_message_by_status(status status) {
+    switch (status) {
+        case OK:
+        case OPEN_FILE_ERROR: {
+            err("Error occurred while opening file");
+            break;
+        }
+        case MALLOC_FILE_CONTENT_ERROR: {
+            err("Error occurred while allocating space for file content");
+            break;
+        }
+        case READ_FILE_ERROR: {
+            err("Error occurred while reading file");
+            break;
+        }
+        case SERVER_POINTER_ERROR: {
+            err("Error occurred while creating server");
+            break;
+        }
+        case SOCKET_ERROR: {
+            err("Error occurred while opening socket");
+            break;
+        }
+        case SETSOCKOPT_ERROR: {
+            err("Error occurred while setting up socket");
+            break;
+        }
+        case BIND_ERROR: {
+            err("Error occurred while binding socket");
+            break;
+        }
+        case LISTEN_ERROR: {
+            err("Error occurred while listening");
+            break;
+        }
+        case ACCEPT_ERROR: {
+            err("Error occurred while accepting new connection");
+            break;
+        }
+    }
 }
 
 void debug(const char* caller_func_name, const char* fmt, ...) {
