@@ -16,7 +16,7 @@
 static char* handle_route(const route incoming_route) {
     char* full_path = NULL;
     char* file_content_type = NULL;
-    char* body = NULL;
+    char* body = malloc(sizeof(char*));
     size_t content_length = 0;
     char* response = NULL;
 
@@ -25,9 +25,10 @@ static char* handle_route(const route incoming_route) {
 
         asprintf(&full_path, "%s%s", DEFAULT_WEB_ROOT_PATH, DEFAULT_404_HTML_FILE_PATH);
         debug(__func__, "file path: %s", full_path);
-        body = read_file(full_path, &content_length);
+        status read = read_file(&body, full_path, &content_length);
 
-        if (body == NULL) {
+        if (read != OK) {
+            print_err_message_by_status(read);
             body = strdup("404 should be here");
             content_length = strlen(body);
         }
@@ -44,10 +45,10 @@ static char* handle_route(const route incoming_route) {
 
         asprintf(&full_path, "%s%s", incoming_route.web_root, incoming_route.file_path);
         debug(__func__, "file path: %s", full_path);
-        body = read_file(full_path, &content_length);
+        status read = read_file(&body, full_path, &content_length);
 
-        if (body == NULL) {
-            err("file read problem");
+        if (read != OK) {
+            print_err_message_by_status(read);
             return handle_route((route){.file_path = NULL});
         }
 
@@ -100,10 +101,7 @@ void destroy_server(server* srv) {
 }
 
 status init_server(server* srv, uint16_t port, char* web_root) {
-    if (!srv) {
-        err("server pointer is NULL");
-        return ERROR;
-    }
+    if (!srv) return SERVER_POINTER_ERROR;
 
     srv->port = port != 0 ? port : DEFAULT_SERVER_PORT;
     srv->web_root = web_root ? web_root : DEFAULT_WEB_ROOT_PATH;
@@ -116,22 +114,19 @@ status init_server(server* srv, uint16_t port, char* web_root) {
     srv->listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (srv->listen_fd == -1) {
-        err("socket problem");
         free(srv);
-        return ERROR;
+        return SOCKET_ERROR;
     }
     
     int yes = 1;
     if (setsockopt(srv->listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        err("setsockopt problem");
         close(srv->listen_fd);
-        return ERROR;
+        return SETSOCKOPT_ERROR;
     }
 
     if ((bind(srv->listen_fd, (struct sockaddr*)&srv->addr, sizeof(srv->addr))) == -1) {
-        err("binding problem");
         close(srv->listen_fd);
-        return ERROR;
+        return BIND_ERROR;
     }
 
     return OK;
@@ -139,9 +134,8 @@ status init_server(server* srv, uint16_t port, char* web_root) {
 
 status launch_server(server* srv) {
     if (listen(srv->listen_fd, 10) == -1) {
-        err("listen problem");
         close(srv->listen_fd);
-        return ERROR;
+        return LISTEN_ERROR;
     }
 
     debug(__func__, "Server is listening on port %d", ntohs(srv->addr.sin_port));
@@ -149,8 +143,7 @@ status launch_server(server* srv) {
     for (;;) {
         int client_fd = accept(srv->listen_fd, NULL, NULL);
         if (client_fd == -1) {
-            err("accept problem");
-            return ERROR;
+            return ACCEPT_ERROR;
         }
 
         handle_client(client_fd);

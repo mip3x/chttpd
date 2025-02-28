@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "../include/config_parser.h"
@@ -8,14 +9,16 @@
 #include "../include/io.h"
 #include "../include/common.h"
 
-server parse_config(const char *file_path) {
+status parse_config(server* srv, const char *file_path) {
     size_t file_size = 0;
-    char* file_content = read_file(file_path, &file_size);
+    char* file_content = malloc(sizeof(char*));
+
+    status read = read_file(&file_content, file_path, &file_size);
+    if (read != OK) return read;
 
     bool http_block = 0;
     bool route_block = 0;
 
-    server srv = {0};
     route current_route = {.file_path = NULL, .web_root = NULL};
 
     char* token = strtok(file_content, " \n\t");
@@ -42,9 +45,9 @@ server parse_config(const char *file_path) {
 
             if (value) {
                 if (http_block && !route_block) {
-                    if (strcmp(key, "port:") == 0) srv.port = atoi(value);
-                    else if (strcmp(key, "web_root:") == 0) srv.web_root = strdup(value);
-                    debug(__func__, "http was updated:\nport: %d\nweb_root: %s", srv.port, srv.web_root);
+                    if (strcmp(key, "port:") == 0) srv->port = atoi(value);
+                    else if (strcmp(key, "web_root:") == 0) srv->web_root = strdup(value);
+                    debug(__func__, "http was updated:\nport: %d\nweb_root: %s", srv->port, srv->web_root);
                 } 
                 else if (route_block) {
                     if (strncmp(key, "mapping", 7) == 0) {
@@ -70,5 +73,5 @@ server parse_config(const char *file_path) {
     }
     
     free(file_content);
-    return srv;
+    return OK;
 }
