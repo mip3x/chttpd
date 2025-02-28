@@ -16,7 +16,7 @@ server parse_config(const char *file_path) {
     bool route_block = 0;
 
     server srv = {0};
-    route current_route = {.mapping = NULL, .file_path = NULL, .web_root = NULL};
+    route current_route = {.file_path = NULL, .web_root = NULL};
 
     char* token = strtok(file_content, " \n\t");
 
@@ -47,10 +47,22 @@ server parse_config(const char *file_path) {
                     debug(__func__, "http was updated:\nport: %d\nweb_root: %s", srv.port, srv.web_root);
                 } 
                 else if (route_block) {
-                    if (strcmp(key, "mapping:") == 0) current_route.mapping = strdup(value);
+                    if (strncmp(key, "mapping", 7) == 0) {
+                        if (strcmp(key, "mapping[regex]:") == 0) {
+                            current_route.mapping.type = REGEX;
+                            if (regcomp(&current_route.mapping.data.regex.preg, value, REG_EXTENDED) != 0)
+                                err("regular expression compilation error: %s", value);
+                            current_route.mapping.data.regex.pattern = strdup(value);
+                        }
+                        else {
+                            current_route.mapping.type = STRING;
+                            current_route.mapping.data.string = strdup(value);
+                        }
+                    }
                     else if (strcmp(key, "file_path:") == 0) current_route.file_path = strdup(value);
                     else if (strcmp(key, "web_root:") == 0) current_route.web_root = strdup(value);
-                    debug(__func__, "route was updated:\nmapping: %s\nfile_path: %s\nweb_root: %s", current_route.mapping, current_route.file_path, current_route.web_root);
+                    debug(__func__, "route was updated:");
+                    PRINT_ROUTE(current_route);
                 }
             }
         }

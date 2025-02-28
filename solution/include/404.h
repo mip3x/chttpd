@@ -7,7 +7,7 @@
 #define DEFAULT_404_STYLES_FILE_PATH "default/404.css"
 
 // TODO: add regex to mapping
-#define DEFAULT_404_STYLES_MAPPING "*/404.css"
+#define DEFAULT_404_STYLES_MAPPING "404.css"
 
 status install_404_route();
 

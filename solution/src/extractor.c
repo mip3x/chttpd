@@ -76,18 +76,24 @@ static void extract_links(route* incoming_route) {
             char* extracted_link = strndup(search_start + extracted_link_regmatch_t.rm_so, extracted_link_length);
 
             debug(__func__, "extracted link: %s", extracted_link);
-            char* mapping = get_mapping(extracted_link, incoming_route->mapping);
+            if (incoming_route->mapping.type == REGEX) {
+                free(extracted_link);
+                break;
+            }
+
+            char* mapping = get_mapping(extracted_link, incoming_route->mapping.data.string);
 
             debug(__func__, "mapping: %s", mapping);
 
             route extracted_link_route = {
                 .web_root = strdup(incoming_route->web_root),
                 .file_path = strdup(extracted_link),
-                .mapping = strdup(mapping),
+                .mapping.type = STRING,
+                .mapping.data.string = strdup(mapping),
             }; 
 
             install(extracted_link_route);
-            debug(__func__, "web_root + extracted_link path: %s", extracted_link_route.mapping);
+            debug(__func__, "web_root + extracted_link path: %s", extracted_link_route.mapping.data.string);
 
             search_start += extracted_link_regmatch_t.rm_eo;
             free(extracted_link);
