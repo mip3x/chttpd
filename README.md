@@ -1,5 +1,5 @@
 # chttpd
-This is a simple HTTP server implementation in C that supports static file serving and configurable routes. The server uses a hash map to store routes and supports both string-based and regex-based mappings
+This is a simple HTTP server implementation in C that supports static file serving and configurable routes (it was written in order to understand how web-server works). The server uses a hash map to store routes and supports both string-based and regex-based mappings
 
 ## Features
 - Serves static files
